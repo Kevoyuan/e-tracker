@@ -15,10 +15,14 @@ import {
   Autocomplete,
 } from '@mui/material';
 import { AddCircle, Delete } from '@mui/icons-material';
+import { DatePicker } from '@mui/lab'; // Make sure to install @mui/lab for DatePicker
+import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
 
 const ExpenseTracker = () => {
   const [expenses, setExpenses] = useState([]);
   const [projectSuggestions, setProjectSuggestions] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date()); // State for selected date
 
   useEffect(() => {
     // Load saved expenses and project suggestions from local storage
@@ -64,7 +68,7 @@ const ExpenseTracker = () => {
   const addNewExpense = () => {
     setExpenses([
       ...expenses,
-      { project: '', quantity: 0, unitPrice: 0, totalPrice: '0.00', actualPaid: '' },
+      { project: '', quantity: '', unitPrice: '', totalPrice: '0.00', actualPaid: '' },
     ]);
   };
 
@@ -82,11 +86,37 @@ const ExpenseTracker = () => {
       .toFixed(2);
   };
 
+  // Function to export the table data to Excel
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(expenses); // Convert expenses data to worksheet
+    const workbook = XLSX.utils.book_new(); // Create a new workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Expenses'); // Append the worksheet
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    saveAs(blob, `Expenses_${selectedDate.toLocaleDateString()}.xlsx`); // Use the selected date for file name
+  };
+
   return (
     <Container maxWidth="md" style={{ marginTop: '2rem' }}>
+      {/* Title and Date Picker section */}
       <Typography variant="h4" gutterBottom align="center">
-        Expense Tracker
+        购物清单🛍️
       </Typography>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <DatePicker
+          label="选择日期"
+          value={selectedDate}
+          onChange={(newDate) => setSelectedDate(newDate)}
+          renderInput={(params) => <TextField {...params} />}
+        />
+        <Button variant="contained" color="secondary" onClick={exportToExcel}>
+          导出为Excel
+        </Button>
+      </div>
+
+      {/* Existing TableContainer code */}
       <TableContainer component={Paper} elevation={3}>
         <Table aria-label="expense table">
           <TableHead>
@@ -164,9 +194,19 @@ const ExpenseTracker = () => {
               </TableRow>
             ))}
             <TableRow>
-              <TableCell colSpan={4} align="right">
+              <TableCell colSpan={3}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddCircle />}
+                  onClick={addNewExpense}
+                  style={{ marginTop: '1rem' }}
+                >
+                  添加新项目
+                </Button>
+              </TableCell>
+              <TableCell align="right">
                 <Typography variant="h6">总计</Typography>
-
               </TableCell>
               <TableCell align="right">
                 <Typography variant="h6">{calculateTotal('actualPaid')}</Typography>
@@ -176,15 +216,6 @@ const ExpenseTracker = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddCircle />}
-        onClick={addNewExpense}
-        style={{ marginTop: '1rem' }}
-      >
-        添加新项目
-      </Button>
     </Container>
   );
 };
