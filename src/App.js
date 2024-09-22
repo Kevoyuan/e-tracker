@@ -25,18 +25,29 @@ const ExpenseTracker = () => {
   const [selectedDate, setSelectedDate] = useState(new Date()); // State for selected date
 
   useEffect(() => {
-    // Load saved expenses and project suggestions from local storage
+    // Load saved expenses, project suggestions, and selected date from local storage
     const savedExpenses = JSON.parse(localStorage.getItem('expenses')) || [];
     const savedSuggestions = JSON.parse(localStorage.getItem('projectSuggestions')) || [];
+    const savedDate = localStorage.getItem('selectedDate');
+  
     setExpenses(savedExpenses);
     setProjectSuggestions(savedSuggestions);
+  
+    if (savedDate) {
+      setSelectedDate(new Date(savedDate));
+    } else {
+      setSelectedDate(new Date());
+    }
   }, []);
+  
 
   useEffect(() => {
-    // Save expenses and project suggestions to local storage
+    // Save expenses, project suggestions, and selected date to local storage
     localStorage.setItem('expenses', JSON.stringify(expenses));
     localStorage.setItem('projectSuggestions', JSON.stringify(projectSuggestions));
-  }, [expenses, projectSuggestions]);
+    localStorage.setItem('selectedDate', selectedDate.toISOString());
+  }, [expenses, projectSuggestions, selectedDate]);
+  
 
   const handleInputChange = (index, field, value) => {
     const updatedExpenses = [...expenses];
