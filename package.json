@@ -1,7 +1,6 @@
 {
   "name": "e-tracker",
   "version": "0.1.0",
-  "homepage": "https://github.com/Kevoyuan/e-tracker",
   "private": true,
   "dependencies": {
     "@capacitor/android": "^6.1.2",
